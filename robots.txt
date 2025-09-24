@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://neverloseyoursm1le.github.io/Credit-Deposit-Calculator/sitemap.xml
