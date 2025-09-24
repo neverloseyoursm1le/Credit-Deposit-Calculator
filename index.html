@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Калькулятор кредитов и вкладов — Credit & Deposit</title>
+  <meta name="description" content="Кредитный и вкладной калькулятор: расчёт ежемесячных платежей, переплаты и прироста вклада. Простой, быстрый и приятный интерфейс." />
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- PLACEHOLDER: Google Analytics (GA4). Вставьте ваш Measurement ID вместо G-XXXXXXX и раскомментируйте блок ниже -->
+  <!--
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXX'); // <- замените на ваш ID
+  </script>
+  -->
+
+  <!-- PLACEHOLDER: Google AdSense. Вставьте ваш код и раскомментируйте при необходимости -->
+  <!--
+  <script data-ad-client="ca-pub-XXXXXXXXXXXXXXX" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  -->
+
+  <style>
+    :root{
+      --bg:#0f1724; /* deep navy */
+      --card:#0b1220;
+      --muted:#98a0b3;
+      --accent:#7c3aed;
+      --accent-2:#06b6d4;
+      --glass: rgba(255,255,255,0.03);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg,#071024 0%, var(--bg) 100%);
+      color:#e6eef8;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:32px;
+    }
+    .wrap{max-width:1100px;margin:0 auto}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:white;box-shadow:0 6px 18px rgba(12,10,20,0.6)}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    .main{display:grid;grid-template-columns:1fr 360px;gap:20px}
+
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:var(--radius);box-shadow:0 8px 28px rgba(2,6,23,0.6);backdrop-filter: blur(6px)}
+    .tabs{display:flex;gap:6px;margin-bottom:14px}
+    .tab{padding:8px 12px;border-radius:10px;background:transparent;color:var(--muted);cursor:pointer;border:1px solid transparent;transition:all .18s}
+    .tab.active{background:linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));color:white;border-color:rgba(255,255,255,0.03)}
+
+    form .row{display:flex;gap:10px;margin-bottom:8px}
+    label{font-size:13px;color:var(--muted)}
+    input[type=number], input[type=text], select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;font-size:15px}
+    .muted{color:var(--muted);font-size:13px}
+    .result{display:flex;gap:12px;align-items:center;margin-top:8px}
+    .big{font-size:18px;font-weight:700}
+    .small{font-size:12px;color:var(--muted)}
+
+    .banks-table{margin-top:12px;border-collapse:collapse;width:100%}
+    .banks-table th, .banks-table td{padding:8px 6px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:13px}
+    .banks-table th{font-size:12px;color:var(--muted)}
+
+    .right-panel{display:flex;flex-direction:column;gap:12px}
+    .card .section-title{font-weight:600;margin-bottom:8px}
+    .note{font-size:13px;color:var(--muted)}
+
+    footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
+
+    @media (max-width:980px){
+      .main{grid-template-columns:1fr;}
+      header{flex-direction:column;align-items:flex-start;gap:10px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">CD</div>
+        <div>
+          <h1>Калькуляторы: кредиты и вклады</h1>
+          <p class="lead">Быстрые расчёты для планирования бюджета — просто введите сумму и срок</p>
+        </div>
+      </div>
+      <div class="muted">Статичный сайт — удобно залить в GitHub, затем подключить рекламу</div>
+    </header>
+
+    <div class="main">
+      <div>
+        <div class="card">
+          <div class="tabs" role="tablist">
+            <button class="tab active" data-tab="loan">Кредит</button>
+            <button class="tab" data-tab="deposit">Вклад</button>
+          </div>
+
+          <!-- LOAN -->
+          <section id="loan" class="panel">
+            <div style="display:flex;gap:12px;align-items:center;justify-content:space-between">
+              <div class="section-title">Калькулятор кредита</div>
+              <div class="muted">Формула аннуитетных платежей</div>
+            </div>
+
+            <form id="loan-form" onsubmit="return false;">
+              <div class="row">
+                <div style="flex:1">
+                  <label>Сумма кредита (₽)</label>
+                  <input id="loan-amount" type="number" min="0" step="1000" value="100000" />
+                </div>
+                <div style="width:160px">
+                  <label>Срок (мес.)</label>
+                  <input id="loan-months" type="number" min="1" step="1" value="36" />
+                </div>
+              </div>
+
+              <div class="row">
+                <div style="flex:1">
+                  <label>Годовая ставка (%)</label>
+                  <input id="loan-rate" type="number" min="0" step="0.01" value="12" />
+                </div>
+                <div style="width:160px">
+                  <label>Тип</label>
+                  <select id="loan-type">
+                    <option value="annuity">Аннуитет</option>
+                    <option value="differential">Дифференцированный</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="result" style="justify-content:space-between;flex-wrap:wrap">
+                <div>
+                  <div class="small">Ежемесячный платёж</div>
+                  <div id="loan-payment" class="big">—</div>
+                </div>
+                <div>
+                  <div class="small">Всего выплачено</div>
+                  <div id="loan-total" class="big">—</div>
+                </div>
+                <div>
+                  <div class="small">Переплата</div>
+                  <div id="loan-overpay" class="big">—</div>
+                </div>
+
+                <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+                  <button id="loan-calc" class="tab" style="padding:8px 12px">Рассчитать</button>
+                  <button id="loan-reset" class="tab" style="background:transparent;border:1px solid rgba(255,255,255,0.03);">Сброс</button>
+                </div>
+              </div>
+
+              <div style="margin-top:12px">
+                <details open>
+                  <summary class="muted">Амортизация (по месяцам)</summary>
+                  <div id="loan-schedule" style="margin-top:8px;overflow:auto;max-height:260px;background:var(--glass);padding:8px;border-radius:10px">
+                    <!-- Table заполняется JS -->
+                  </div>
+                </details>
+              </div>
+
+            </form>
+
+            <div style="margin-top:12px">
+              <div class="section-title">Таблица ставок банков (ручное редактирование файла <code>bank_rates.json</code>)</div>
+              <div class="note">Заполните `bank_rates.json` в репозитории — список подхватится автоматически.</div>
+
+              <table class="banks-table" id="banks-table">
+                <thead>
+                  <tr><th>Банк</th><th>Ставка, % (год)</th><th>Месячный платёж</th></tr>
+                </thead>
+                <tbody>
+                  <!-- rows via JS -->
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- DEPOSIT -->
+          <section id="deposit" class="panel" style="display:none">
+            <div style="display:flex;gap:12px;align-items:center;justify-content:space-between">
+              <div class="section-title">Калькулятор вклада</div>
+              <div class="muted">Учитывается ежемесячная капитализация</div>
+            </div>
+
+            <form id="deposit-form" onsubmit="return false;">
+              <div class="row">
+                <div style="flex:1">
+                  <label>Начальная сумма (₽)</label>
+                  <input id="dep-amount" type="number" min="0" step="100" value="50000" />
+                </div>
+                <div style="width:160px">
+                  <label>Срок (мес.)</label>
+                  <input id="dep-months" type="number" min="1" value="12" />
+                </div>
+              </div>
+
+              <div class="row">
+                <div style="flex:1">
+                  <label>Годовая ставка (%)</label>
+                  <input id="dep-rate" type="number" min="0" step="0.01" value="6" />
+                </div>
+                <div style="width:180px">
+                  <label>Капитализация</label>
+                  <select id="dep-frequency">
+                    <option value="12">Ежемесячно</option>
+                    <option value="4">Ежеквартально</option>
+                    <option value="1">Ежегодно</option>
+                    <option value="365">Ежедневно</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div style="flex:1">
+                  <label>Ежемесячное пополнение (₽)</label>
+                  <input id="dep-add" type="number" min="0" step="100" value="0" />
+                </div>
+                <div style="width:160px">&nbsp;</div>
+              </div>
+
+              <div class="result">
+                <div>
+                  <div class="small">Итоговая сумма</div>
+                  <div id="dep-final" class="big">—</div>
+                </div>
+                <div>
+                  <div class="small">Прирост (проценты)</div>
+                  <div id="dep-gain" class="big">—</div>
+                </div>
+                <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+                  <button id="dep-calc" class="tab">Рассчитать</button>
+                  <button id="dep-reset" class="tab" style="background:transparent;border:1px solid rgba(255,255,255,0.03);">Сброс</button>
+                </div>
+              </div>
+
+              <div style="margin-top:12px">
+                <details>
+                  <summary class="muted">Детализация по периодам</summary>
+                  <div id="dep-schedule" style="margin-top:8px;overflow:auto;max-height:260px;background:var(--glass);padding:8px;border-radius:10px"></div>
+                </details>
+              </div>
+
+            </form>
+
+          </section>
+
+        </div>
+      </div>
+
+      <aside class="right-panel">
+        <div class="card">
+          <div class="section-title">Советы</div>
+          <ul style="margin:8px 0 0 16px;color:var(--muted);padding:0">
+            <li>Для кредитов чаще используются аннуитетные платежи — удобнее для планирования бюджета.</li>
+            <li>Для вкладов смотрите на частоту капитализации — чем чаще, тем выше итог.</li>
+            <li>Список банков хранится в <code>bank_rates.json</code> — редактируйте вручную.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Монетизация</div>
+          <p class="note">Вставьте Google Analytics (GA4) в шапке страницы (раздел PLACEHOLDER). Для рекламы используйте Google AdSense или другой сетевой код — вставьте его тоже в шапке.</p>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Файлы</div>
+          <p class="note">index.html — главный файл<br>bank_rates.json — ставки банков<br>.github/workflows/deploy.yml — автоматический деплой в GitHub Pages</p>
+        </div>
+
+      </aside>
+    </div>
+
+    <footer>
+      Сайт подготовлен автоматически. Редактируйте <code>bank_rates.json</code> и вставляйте ID Google Analytics в шапке страницы.
+    </footer>
+  </div>
+
+<script>
+// ------------------ HELPERS ------------------
+const fmt = v => new Intl.NumberFormat('ru-RU', {style:'currency', currency:'RUB', maximumFractionDigits:0}).format(v);
+const float = v => parseFloat(v) || 0;
+
+// ------------------ LOAN ------------------
+function calcLoanValues(){
+  const P = float(document.getElementById('loan-amount').value);
+  const months = Math.max(1, parseInt(document.getElementById('loan-months').value || '0'));
+  const annual = float(document.getElementById('loan-rate').value);
+  const type = document.getElementById('loan-type').value;
+  const r = annual/100/12;
+
+  let payment = 0, total = 0, overpay = 0, schedule = [];
+  if(type === 'annuity'){
+    if(r === 0){ payment = P / months; }
+    else{ payment = P * r / (1 - Math.pow(1+r, -months)); }
+    total = payment * months;
+    overpay = total - P;
+
+    // amortization
+    let balance = P;
+    for(let m=1;m<=months;m++){
+      const interest = balance * r;
+      const principalPart = payment - interest;
+      balance = Math.max(0, balance - principalPart);
+      schedule.push({m, payment, interest, principalPart, balance});
+    }
+  } else { // differential
+    const principalPart = P / months;
+    let balance = P;
+    for(let m=1;m<=months;m++){
+      const interest = balance * r;
+      const pay = principalPart + interest;
+      balance = Math.max(0, balance - principalPart);
+      schedule.push({m, payment:pay, interest, principalPart, balance});
+      total += pay;
+    }
+    payment = schedule[0] ? schedule[0].payment : 0;
+    overpay = total - P;
+  }
+
+  return {payment, total, overpay, schedule};
+}
+
+function renderLoan(){
+  const res = calcLoanValues();
+  document.getElementById('loan-payment').textContent = fmt(res.payment);
+  document.getElementById('loan-total').textContent = fmt(res.total);
+  document.getElementById('loan-overpay').textContent = fmt(res.overpay);
+
+  const container = document.getElementById('loan-schedule');
+  container.innerHTML = '';
+  const table = document.createElement('table');
+  table.style.width='100%';
+  table.style.borderSpacing='6px';
+  table.innerHTML = `
+    <thead style="color:var(--muted);font-size:13px"><tr><th>Мес.</th><th>Платёж</th><th>Проценты</th><th>Погашение</th><th>Остаток</th></tr></thead>
+    <tbody></tbody>
+  `;
+  const tb = table.querySelector('tbody');
+  const slice = res.schedule.slice(0, 500);
+  for(const row of slice){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${row.m}</td><td>${fmt(row.payment)}</td><td>${fmt(row.interest)}</td><td>${fmt(row.principalPart)}</td><td>${fmt(row.balance)}</td>`;
+    tb.appendChild(tr);
+  }
+  container.appendChild(table);
+
+  // обновить таблицу банков
+  updateBanksTable(res.payment);
+}
+
+// ------------------ DEPOSIT ------------------
+function calcDeposit(){
+  let A = float(document.getElementById('dep-amount').value);
+  const months = Math.max(1, parseInt(document.getElementById('dep-months').value || '0'));
+  const annual = float(document.getElementById('dep-rate').value);
+  const freq = parseInt(document.getElementById('dep-frequency').value); // periods per year
+  const addMonthly = float(document.getElementById('dep-add').value);
+
+  const years = months/12;
+  const periods = Math.ceil(years * freq);
+  const perRate = annual/100/freq;
+  // contribution per compounding period
+  const contribPerPeriod = addMonthly * (12 / freq);
+
+  const schedule = [];
+  let balance = A;
+  for(let p=1;p<=periods;p++){
+    // add contribution at period start
+    balance += contribPerPeriod;
+    const interest = balance * perRate;
+    balance += interest;
+    schedule.push({p, balance, interest});
+  }
+  const final = balance;
+  const gain = final - (A + addMonthly * months);
+  return {final, gain, schedule};
+}
+
+function renderDeposit(){
+  const res = calcDeposit();
+  document.getElementById('dep-final').textContent = fmt(res.final);
+  document.getElementById('dep-gain').textContent = fmt(res.gain);
+
+  const container = document.getElementById('dep-schedule');
+  container.innerHTML = '';
+  const table = document.createElement('table');
+  table.style.width='100%';
+  table.innerHTML = `<thead style="color:var(--muted);font-size:13px"><tr><th>Период</th><th>Прирост</th><th>Баланс</th></tr></thead><tbody></tbody>`;
+  const tb = table.querySelector('tbody');
+  for(const row of res.schedule.slice(0,500)){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${row.p}</td><td>${fmt(row.interest)}</td><td>${fmt(row.balance)}</td>`;
+    tb.appendChild(tr);
+  }
+  container.appendChild(table);
+}
+
+// ------------------ BANKS ------------------
+let BANKS = [
+  {name: "Сбербанк", rate: 12.5},
+  {name: "Тинькофф", rate: 11.9},
+  {name: "ВТБ", rate: 13.0},
+  {name: "Альфа-Банк", rate: 12.0}
+];
+
+async function loadBanks(){
+  try{
+    const r = await fetch('bank_rates.json', {cache:'no-cache'});
+    if(r.ok){
+      const data = await r.json();
+      if(Array.isArray(data) && data.length) BANKS = data;
+    }
+  }catch(e){
+    // ignore, оставляем дефолт
+    console.warn('bank_rates.json not loaded, using sample', e);
+  }
+  updateBanksTable();
+}
+
+function updateBanksTable(exampleMonthlyPayment=null){
+  const tbody = document.querySelector('#banks-table tbody');
+  tbody.innerHTML = '';
+  const P = float(document.getElementById('loan-amount').value);
+  const months = Math.max(1, parseInt(document.getElementById('loan-months').value || '0'));
+  for(const b of BANKS){
+    const tr = document.createElement('tr');
+    const rate = float(b.rate);
+    // calculate monthly payment for bank rate (annuity)
+    const r = rate/100/12;
+    let monthly = 0;
+    if(r === 0) monthly = P / months;
+    else monthly = P * r / (1 - Math.pow(1+r, -months));
+    tr.innerHTML = `<td>${b.name}</td><td>${rate.toFixed(2)}%</td><td>${fmt(monthly)}</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+// ------------------ UI BINDINGS ------------------
+function setup(){
+  document.querySelectorAll('.tab').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      const t = btn.dataset.tab;
+      if(t){
+        document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
+        document.getElementById(t).style.display = 'block';
+        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+        btn.classList.add('active');
+      }
+    })
+  });
+
+  document.getElementById('loan-calc').addEventListener('click', renderLoan);
+  document.getElementById('loan-reset').addEventListener('click', ()=>{
+    document.getElementById('loan-amount').value = 100000;
+    document.getElementById('loan-rate').value = 12;
+    document.getElementById('loan-months').value = 36;
+    document.getElementById('loan-type').value = 'annuity';
+    renderLoan();
+  });
+
+  document.getElementById('dep-calc').addEventListener('click', renderDeposit);
+  document.getElementById('dep-reset').addEventListener('click', ()=>{
+    document.getElementById('dep-amount').value = 50000;
+    document.getElementById('dep-rate').value = 6;
+    document.getElementById('dep-months').value = 12;
+    document.getElementById('dep-add').value = 0;
+    document.getElementById('dep-frequency').value = 12;
+    renderDeposit();
+  });
+
+  // real-time small updates: recalc banks when amount/term change
+  ['loan-amount','loan-months','loan-rate','loan-type'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.addEventListener('input', ()=>{
+      // only small live updates to table
+      updateBanksTable();
+    })
+  });
+
+  // initial
+  loadBanks().then(()=>{ renderLoan(); renderDeposit(); });
+}
+
+setup();
+</script>
+</body>
+</html>
